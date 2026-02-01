@@ -16,6 +16,7 @@ A Python library that provides HackMD tools for AI agents, compatible with Googl
 - [Quick Start](#quick-start)
 - [Usage](#usage)
   - [CLI Mode](#cli-mode)
+  - [MCP Server Mode (New)](#mcp-server-mode-new)
   - [Programmatic Usage](#programmatic-usage)
   - [Using Tools with Other AI Providers](#using-tools-with-other-ai-providers)
 - [API Reference](#api-reference)
@@ -110,6 +111,46 @@ Chat with HackMD Agent (ctrl-c to quit)
 😂: Create a note titled "TODO" with content "# My Tasks\n- Task 1\n- Task 2"
 🔧 Using: hackmd_create_note...
 🤖: I've created your note "TODO". You can access it at https://hackmd.io/xyz789
+```
+
+### MCP Server Mode (New)
+
+The agent now includes a Model Context Protocol (MCP) server, allowing it to be used directly by MCP-compatible clients like Claude Desktop or Cursor.
+
+**Prerequisites:**
+- `HACKMD_API_TOKEN` environment variable must be set.
+
+**Run the server:**
+
+```bash
+# Using the installed script
+hackmd-mcp
+
+# Or using fastmcp CLI (for development)
+fastmcp run src/hackmd_agent/mcp_server.py:mcp
+```
+
+**Configuration for Claude Desktop:**
+
+Add this to your `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "hackmd": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--with",
+        "hackmd-agent-python", 
+        "hackmd-mcp"
+      ],
+      "env": {
+        "HACKMD_API_TOKEN": "YOUR_TOKEN_HERE"
+      }
+    }
+  }
+}
 ```
 
 ### Programmatic Usage
