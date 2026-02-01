@@ -16,6 +16,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.2.0] - 2024-02-01
+
+### Changed
+- **BREAKING**: Migrated from `google-generativeai` to new `google-genai` SDK (v1.0.0+)
+- Updated `process_message()` to accept `genai.Client` instead of `tools` list as first argument
+- Updated `run_agent()` to accept `genai.Client` as first argument
+- Updated `to_gemini_tools()` to use `parameters_json_schema` format compatible with new SDK
+
+### Technical Details
+- Uses `google-genai>=1.0.0`
+- Implements `types.FunctionDeclaration` for tool definitions
+- Uses `client.aio.chats.create` for async chat sessions
+
+---
+
 ## [1.1.0] - 2024-02-01
 
 ### Changed

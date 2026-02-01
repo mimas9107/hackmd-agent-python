@@ -27,16 +27,19 @@ class Tool:
 
 
 def to_gemini_tools(tools: list[Tool]) -> list[dict[str, Any]]:
-    """Convert Tool list to Gemini function declarations format."""
+    """
+    Convert Tool list to Gemini function declarations format.
+    Returns a list of FunctionDeclaration-compatible dicts for google-genai SDK.
+    """
     function_declarations = []
     for tool in tools:
         func_decl: dict[str, Any] = {
             "name": tool.name,
             "description": tool.description,
         }
-        # Gemini uses 'parameters' instead of 'input_schema'
+        # google-genai uses 'parameters_json_schema' for the schema
         if tool.input_schema:
-            func_decl["parameters"] = tool.input_schema
+            func_decl["parameters_json_schema"] = tool.input_schema
         function_declarations.append(func_decl)
 
     return function_declarations

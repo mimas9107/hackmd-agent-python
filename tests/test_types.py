@@ -28,8 +28,9 @@ def test_to_gemini_tools():
     assert len(result) == 1
     assert result[0]["name"] == "test_tool"
     assert result[0]["description"] == "A test tool"
-    assert "parameters" in result[0]
-    assert result[0]["parameters"]["type"] == "object"
+    # google-genai uses parameters_json_schema
+    assert "parameters_json_schema" in result[0]
+    assert result[0]["parameters_json_schema"]["type"] == "object"
     assert "call" not in result[0]
 
 

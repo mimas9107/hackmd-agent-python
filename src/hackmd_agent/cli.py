@@ -5,7 +5,7 @@ import asyncio
 import os
 import sys
 
-import google.generativeai as genai
+from google import genai
 
 from .tools import create_hackmd_tools
 from .agent import run_agent
@@ -25,12 +25,12 @@ async def async_main() -> None:
     api_key = assert_env("GEMINI_API_KEY")
     api_token = assert_env("HACKMD_API_TOKEN")
 
-    # Configure Gemini API
-    genai.configure(api_key=api_key)
+    # Create Gemini client
+    client = genai.Client(api_key=api_key)
 
     tools = create_hackmd_tools(api_token)
 
-    await run_agent(tools)
+    await run_agent(client, tools)
 
 
 def main() -> None:

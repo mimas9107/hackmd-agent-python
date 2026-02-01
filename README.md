@@ -1,6 +1,6 @@
 # HackMD Agent for Python
 
-[![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)](./CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.2.0-blue.svg)](./CHANGELOG.md)
 [![Python](https://img.shields.io/badge/python-%3E%3D3.10-blue.svg)](https://www.python.org/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](./LICENSE)
 
@@ -38,7 +38,7 @@ A Python library that provides HackMD tools for AI agents, compatible with Googl
 - **Async API** for high-performance integration
 - **Full type hints** for better IDE support
 - **Native HackMD client** using httpx (no external HackMD SDK dependency)
-- **Google Gemini compatible** function calling format
+- **New Google Gen AI SDK** support (`google-genai`)
 
 ## Requirements
 
@@ -117,15 +117,16 @@ Chat with HackMD Agent (ctrl-c to quit)
 ```python
 import asyncio
 import os
-import google.generativeai as genai
+from google import genai
 from hackmd_agent import create_hackmd_tools, process_message
 
 async def main():
-    genai.configure(api_key=os.environ["GEMINI_API_KEY"])
+    client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
     tools = create_hackmd_tools(os.environ["HACKMD_API_TOKEN"])
 
     # Process a single message
     result = await process_message(
+        client,
         tools,
         "Create a note titled 'Meeting Notes' with content '# Today Meeting\n\n- Discuss roadmap'"
     )
@@ -180,29 +181,30 @@ Create HackMD tools for AI agents.
 
 ---
 
-### `run_agent(tools, config=None) -> None`
+### `run_agent(client, tools, config=None) -> None`
 
 Run interactive CLI agent.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
+| `client` | `genai.Client` | Yes | Google Gen AI Client |
 | `tools` | `list[Tool]` | Yes | List of tools |
 | `config` | `AgentConfig` | No | Agent configuration |
 
 **AgentConfig:**
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
-| `model` | `str` | `"gemini-2.0-flash"` | LLM model to use |
+| `model` | `str` | `"gemini-2.5-flash"` | LLM model to use |
 | `max_tokens` | `int` | `4096` | Max tokens for response |
 | `system_prompt` | `str` | `"You are a helpful agent..."` | System prompt |
 
 ---
 
-### `process_message(tools, message, conversation=None, config=None) -> ProcessResult`
+### `process_message(client, tools, message, conversation=None, config=None) -> ProcessResult`
 
 Process a single message programmatically.
 
-**Returns:** `ProcessResult` dataclass with:
+**Returns:** `ProcessResult` dataclass with:,
 ```python
 @dataclass
 class ProcessResult:
