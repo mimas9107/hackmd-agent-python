@@ -5,7 +5,7 @@ import sys
 from typing import Literal
 
 from fastmcp import FastMCP
-from .hackmd_client import HackMDClient
+from hackmd_agent.hackmd_client import HackMDClient
 
 # Initialize FastMCP
 mcp = FastMCP("HackMD Agent")
