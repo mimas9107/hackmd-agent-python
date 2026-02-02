@@ -127,10 +127,21 @@ The agent now includes a Model Context Protocol (MCP) server, allowing it to be 
 hackmd-mcp
 
 # Or using fastmcp CLI (for development)
-fastmcp run src/hackmd_agent/mcp_server.py:mcp
+uv run fastmcp run src/hackmd_agent/mcp_server.py:mcp
 ```
 
-**Configuration for Claude Desktop:**
+**Run as SSE Server (Remote Mode):**
+
+If your client (e.g., OpenCode) requires a remote connection:
+
+```bash
+# Start the SSE server on port 8000
+uv run fastmcp run src/hackmd_agent/mcp_server.py:mcp --transport sse --port 8000
+```
+
+The SSE endpoint will be available at: `http://127.0.0.1:8000/sse`
+
+**Configuration for Claude Desktop (Local Stdio):**
 
 Add this to your `claude_desktop_config.json`:
 
@@ -152,6 +163,23 @@ Add this to your `claude_desktop_config.json`:
   }
 }
 ```
+
+**Configuration for OpenCode (Remote SSE):**
+
+Since OpenCode requires a remote connection, first start the server in SSE mode (see above), then configure OpenCode to connect to `http://127.0.0.1:8000/sse`.
+
+If OpenCode uses a config file (`opencode.json`), it might look like this (depends on specific OpenCode version implementation of remote MCP):
+
+```json
+{
+  "mcpServers": {
+    "hackmd": {
+      "url": "http://127.0.0.1:8000/sse"
+    }
+  }
+}
+```
+*(Note: Check OpenCode documentation for exact remote server configuration syntax)*
 
 ### Programmatic Usage
 
