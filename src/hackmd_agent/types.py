@@ -1,8 +1,9 @@
 """Type definitions and utilities for AI agent tools."""
 
-from dataclasses import dataclass
-from typing import Any, Callable, Awaitable, TypedDict
 import json
+from collections.abc import Awaitable, Callable
+from dataclasses import dataclass
+from typing import Any, TypedDict
 
 
 class InputSchema(TypedDict, total=False):

@@ -165,21 +165,46 @@ This library provides 6 HackMD tools that allow AI agents to manage notes on Hac
 
 ### 6. `hackmd_search_notes`
 
-**Purpose:** Search notes by title keyword.
+**Purpose:** Search notes by title (and optionally content) with relevance ranking.
 
 **Input:**
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `keyword` | string | Yes | The keyword to search for |
+| `searchContent` | boolean | No | If true, also search within note content (slower) |
+| `fuzzy` | boolean | No | If true, enable fuzzy matching for typo tolerance |
+| `limit` | integer | No | Maximum results to return (default: 20, max: 100) |
 
-**Output:** JSON array of matching note objects
+**Output:** JSON array of matching note objects, sorted by relevance
+
+**Relevance Ranking:**
+1. Exact title match (100)
+2. Title starts with keyword (90)
+3. Keyword anywhere in title (70)
+4. Any word matches (60)
 
 **Example Usage:**
 ```json
 {
   "name": "hackmd_search_notes",
   "input": {
-    "keyword": "meeting"
+    "keyword": "meeting",
+    "searchContent": false,
+    "fuzzy": false,
+    "limit": 10
+  }
+}
+```
+
+**Advanced Example (content search with fuzzy matching):**
+```json
+{
+  "name": "hackmd_search_notes",
+  "input": {
+    "keyword": "project plan",
+    "searchContent": true,
+    "fuzzy": true,
+    "limit": 5
   }
 }
 ```
@@ -188,6 +213,7 @@ This library provides 6 HackMD tools that allow AI agents to manage notes on Hac
 - User asks to find a note by name
 - Looking for notes related to a topic
 - Before creating a note, check if similar exists
+- Finding notes by content keywords (use `searchContent: true`)
 
 ---
 
@@ -265,6 +291,6 @@ async with asyncio.TaskGroup() as tg:
 
 ## Version
 
-This document is for **hackmd-agent-python v1.0.0**.
+This document is for **hackmd-agent-python v1.3.0**.
 
 See [CHANGELOG.md](./CHANGELOG.md) for version history.

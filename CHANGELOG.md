@@ -1,110 +1,117 @@
-# Changelog
+# 更新日誌
 
-All notable changes to this project will be documented in this file.
+本專案的所有重要變更都會記錄在此檔案。
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+格式基於 [Keep a Changelog](https://keepachangelog.com/zh-TW/1.1.0/)，
+並遵循 [語意化版本](https://semver.org/lang/zh-TW/spec/v2.0.0.html)。
 
-## [Unreleased]
+## [未發布]
 
-### Planned
-- MCP (Model Context Protocol) server support
-- OpenAI function calling format adapter
-- Rate limiting and retry logic
-- Batch operations support
-- Async context manager for tool cleanup
+---
+
+## [1.3.0] - 2026-03-22
+
+### 新增
+- **搜尋功能增強**：
+  - `searchContent` 參數：支援搜尋筆記內容（而不僅是標題）
+  - `fuzzy` 參數：支援模糊匹配，容許打字錯誤
+  - `limit` 參數：限制回傳結果數量（預設 20，最大 100）
+- **相關性排序**：搜尋結果依照相關程度排序
+  - 100 分：完全匹配
+  - 90 分：標題開頭匹配
+  - 70 分：關鍵字包含在標題中
+  - 60 分：任意單字匹配
+- **快取機制**：
+  - 筆記列表 60 秒記憶體快取
+  - 建立、更新、刪除筆記後自動清除快取
+  - 減少重複 API 呼叫，提升效能
+- **重試與指數退避**：
+  - 自動重試機制（預設最多 3 次）
+  - 遇到 429 (速率限制) 或 5xx 錯誤時自動重試
+  - 指數退避：1s → 2s → 4s，最大等待 32 秒
+  - 支援 `Retry-After` header
+- **AI Agent 透明度**：
+  - 回應包含 `_meta` 欄位
+  - 提供重試資訊 (`was_rate_limited`, `total_attempts`, `total_wait_seconds`)
+  - 提供進度訊息陣列 (`progress_messages`)
+
+### 技術細節
+- 新增 `HackMDClient.search_notes()` API 方法
+- 新增 `RetryInfo` 資料類別追蹤重試狀態
+- 新增 `_request_with_retry()` 方法處理所有 API 請求
+- MCP Server 和 tools.py 支援 progress callback
+- 所有工具回應格式改為 `{"data": ..., "_meta": {...}}`
 
 ---
 
 ## [1.2.0] - 2024-02-01
 
-### Changed
-- **BREAKING**: Migrated from `google-generativeai` to new `google-genai` SDK (v1.0.0+)
-- Updated `process_message()` to accept `genai.Client` instead of `tools` list as first argument
-- Updated `run_agent()` to accept `genai.Client` as first argument
-- Updated `to_gemini_tools()` to use `parameters_json_schema` format compatible with new SDK
+### 變更
+- **破壞性變更**：從 `google-generativeai` 遷移到新版 `google-genai` SDK (v1.0.0+)
+- 更新 `process_message()` 接受 `genai.Client` 作為第一個參數
+- 更新 `run_agent()` 接受 `genai.Client` 作為第一個參數
+- 更新 `to_gemini_tools()` 使用與新 SDK 相容的 `parameters_json_schema` 格式
 
-### Technical Details
-- Uses `google-genai>=1.0.0`
-- Implements `types.FunctionDeclaration` for tool definitions
-- Uses `client.aio.chats.create` for async chat sessions
+### 技術細節
+- 使用 `google-genai>=1.0.0`
+- 使用 `types.FunctionDeclaration` 定義工具
+- 使用 `client.aio.chats.create` 進行非同步聊天
 
 ---
 
 ## [1.1.0] - 2024-02-01
 
-### Changed
-- **BREAKING**: Migrated from Anthropic Claude SDK to Google Gemini API
-  - Environment variable changed: `ANTHROPIC_API_KEY` → `GEMINI_API_KEY`
-  - Default model changed: `claude-3-5-haiku-latest` → `gemini-2.0-flash`
-- Updated `run_agent()` and `process_message()` function signatures
-  - Removed `client` parameter (Gemini uses `genai.configure()` instead)
-- Added `to_gemini_tools()` function for Gemini function calling format
-- Kept `to_anthropic_tools()` for backward compatibility
+### 變更
+- **破壞性變更**：從 Anthropic Claude SDK 遷移到 Google Gemini API
+  - 環境變數變更：`ANTHROPIC_API_KEY` → `GEMINI_API_KEY`
+  - 預設模型變更：`claude-3-5-haiku-latest` → `gemini-2.0-flash`
+- 更新 `run_agent()` 和 `process_message()` 函式簽名
+  - 移除 `client` 參數（Gemini 使用 `genai.configure()`）
+- 新增 `to_gemini_tools()` 函式
+- 保留 `to_anthropic_tools()` 確保向後相容
 
-### Added
-- Google Gemini function calling support
-- Free tier support (no API costs for basic usage!)
+### 新增
+- Google Gemini 函式呼叫支援
+- 免費方案支援（基本使用無需付費！）
 
-### Technical Details
-- Uses `google-generativeai>=0.8.0` SDK
-- Uses `asyncio.to_thread()` for async Gemini API calls
-- Supports Gemini's native function response format
+### 技術細節
+- 使用 `google-generativeai>=0.8.0` SDK
+- 使用 `asyncio.to_thread()` 處理非同步 Gemini API 呼叫
+- 支援 Gemini 原生函式回應格式
 
 ---
 
 ## [1.0.0] - 2024-02-01
 
-### Added
-- Initial release ported from Deno version (tiny-hackmd-agent)
-- **Core Tools:**
-  - `hackmd_list_notes` - List all notes from HackMD
-  - `hackmd_read_note` - Read note content by ID
-  - `hackmd_create_note` - Create new notes with title and content
-  - `hackmd_update_note` - Update existing note content
-  - `hackmd_delete_note` - Delete notes by ID
-  - `hackmd_search_notes` - Search notes by title keyword (NEW)
-- **Agent Features:**
-  - Interactive CLI mode with emoji prompts
-  - Programmatic `process_message()` async API for integration
-  - Configurable model, max tokens, and system prompt
-  - Tool execution with error handling
-- **Developer Experience:**
-  - Full type hints with Python 3.10+ syntax
-  - pytest test suite with 11 tests
-  - pytest-asyncio for async test support
-  - mypy strict mode compatible
-  - ruff for linting and formatting
-  - Comprehensive README documentation
-
-### Technical Details
-- Python >= 3.10 required
-- Native `HackMDClient` using `httpx` (no external HackMD SDK)
-- Fully async implementation
-- `dataclass` based Tool and ProcessResult types
-
-### Changed (from Deno version)
-- Migrated from Deno/TypeScript to Python
-- Renamed tool prefixes from `list_notes` to `hackmd_list_notes` for clarity
-- Added permission parameters (readPermission, writePermission) to create/update tools
-- Implemented native HackMD API client instead of using external SDK
+### 新增
+- 初始版本（從 Deno 版本移植）
+- **核心工具：**
+  - `hackmd_list_notes` - 列出所有筆記
+  - `hackmd_read_note` - 依 ID 讀取筆記內容
+  - `hackmd_create_note` - 建立新筆記
+  - `hackmd_update_note` - 更新現有筆記
+  - `hackmd_delete_note` - 刪除筆記
+  - `hackmd_search_notes` - 依標題關鍵字搜尋
+- **代理功能：**
+  - 互動式 CLI 模式
+  - 可程式化 `process_message()` 非同步 API
+  - 可設定模型、對話長度上限和系統提示詞
+  - 工具執行與錯誤處理
 
 ---
 
-## Version Numbering
+## 版本號說明
 
-This project uses Semantic Versioning:
+本專案使用語意化版本控制：
 
-- **MAJOR** version for incompatible API changes
-- **MINOR** version for new functionality (backwards compatible)
-- **PATCH** version for bug fixes (backwards compatible)
+- **主版本號**：不相容的 API 變更
+- **次版本號**：新增功能（向後相容）
+- **修補版本號**：錯誤修復（向後相容）
 
-## Links
+---
 
-- [README](./README.md)
-- [AGENTS.md](./AGENTS.md) - AI Agent integration guide
-- [HackMD API Documentation](https://hackmd.io/@hackmd-api/developer-portal)
+## 相關連結
 
-[Unreleased]: https://github.com/user/hackmd-agent-python/compare/v1.1.0...HEAD
-[1.1.0]: https://github.com/user/hackmd-agent-python/compare/v1.0.0...v1.1.0
-[1.0.0]: https://github.com/user/hackmd-agent-python/releases/tag/v1.0.0
+- [中文說明書](./README.md)
+- [AGENTS.md](./AGENTS.md) - AI 代理整合指南
+- [HackMD API 文檔](https://hackmd.io/@hackmd-api/developer-portal)

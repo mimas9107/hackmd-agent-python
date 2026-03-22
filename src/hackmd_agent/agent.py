@@ -6,7 +6,7 @@ from typing import Any
 from google import genai
 from google.genai import types
 
-from .types import Tool, to_gemini_tools, execute_tool
+from .types import Tool, execute_tool, to_gemini_tools
 
 
 @dataclass
