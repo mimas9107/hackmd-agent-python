@@ -1,3 +1,13 @@
+---
+name:          "README.md"
+description:   "專為 AI 代理設計的 HackMD 工具庫，相容於 Google Gemini 函式呼叫格式，並支援 MCP (Model Context Protocol)。"
+created_date:  "2026/05/29 13:25:00"
+modified_date: "2026/06/18 10:50:00"
+project_version: "1.3.0"
+document_version: "1.0.0"
+agent_sign: ['human/mimas', 'gemini cli/gemini-cli']
+---
+
 # HackMD Agent for Python
 
 [![版本](https://img.shields.io/badge/version-1.3.0-blue.svg)](./CHANGELOG.md)

@@ -1,3 +1,13 @@
+---
+name:          "CHANGELOG.md"
+description:   "本專案的所有重要變更都會記錄在此檔案。"
+created_date:  "2026/05/29 13:25:00"
+modified_date: "2026/06/18 10:50:00"
+project_version: "1.3.0"
+document_version: "1.0.0"
+agent_sign: ['human/mimas', 'gemini cli/gemini-cli']
+---
+
 # 更新日誌
 
 本專案的所有重要變更都會記錄在此檔案。
