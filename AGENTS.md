@@ -1,296 +1,39 @@
-# AGENTS.md - AI Agent Integration Guide
-
-This document provides instructions for AI agents to effectively use the HackMD tools provided by this library.
-
-## Overview
-
-This library provides 6 HackMD tools that allow AI agents to manage notes on HackMD. All tools are async and return JSON-formatted strings.
-
-## Available Tools
-
-### 1. `hackmd_list_notes`
-
-**Purpose:** List all notes belonging to the authenticated user.
-
-**Input:** None required
-
-**Output:** JSON array of note objects with metadata (id, title, createdAt, updatedAt, etc.)
-
-**Example Usage:**
-```json
-{
-  "name": "hackmd_list_notes",
-  "input": {}
-}
-```
-
-**When to Use:**
-- User asks to see their notes
-- Need to find a note ID for subsequent operations
-- Checking what notes exist before creating a new one
-
+---
+name:          "AGENTS.md"
+description:   "HackMD AI Agent 整合指南 — MCP 工具集與操作準則"
+created_date:  "2026/05/29 13:25:00"
+modified_date: "2026/06/18 10:40:00"
+project_version: "1.0.0"
+document_version: "1.1.0"
+agent_sign: ['human/mimas', 'gemini cli/gemini-cli']
 ---
 
-### 2. `hackmd_read_note`
+# HackMD AI Agent 整合指南 (AGENTS.md)
 
-**Purpose:** Read the full content of a specific note.
+本文件定義 HackMD Agent 的工具操作準則。Agent 必須同時遵循工作區全域規範 (`../AGENTS.md`)。
 
-**Input:**
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `noteId` | string | Yes | The unique ID of the note |
+## 1. 專案定位 (Project Context)
+- 本專案是一個 **MCP (Model Context Protocol) Server**，旨在為 AI 提供操作 HackMD 筆記的能力。
+- 開發環境必須遵循全域規範中的 `uv` 與 `python3.10+` 約束。
 
-**Output:** JSON object with note metadata and `content` field containing the markdown
+## 2. 工具操作準則 (Tool Usage)
+本專案提供 6 個核心工具，所有工具均為非同步 (async) 並回傳 JSON 字串。
 
-**Example Usage:**
-```json
-{
-  "name": "hackmd_read_note",
-  "input": {
-    "noteId": "abc123xyz"
-  }
-}
-```
+### 查詢與讀取 (Discovery & Read)
+- `hackmd_list_notes`: 獲取筆記列表。
+- `hackmd_read_note`: 讀取特定筆記內容。修改前**必須**先執行讀取以確保上下文完整。
 
-**When to Use:**
-- User asks to read/view a note
-- Need to check current content before updating
-- Analyzing note content for summarization
+### 寫入與修改 (Write & Update)
+- `hackmd_create_note`: 建立新筆記。
+- `hackmd_update_note`: 更新既有筆記。建議在更新前先讀取，以避免意外覆蓋重要資訊。
 
----
+### 安全操作
+- `hackmd_delete_note`: 永久刪除。執行前**必須**取得使用者明確授權（遵循全域規範 Section 1）。
 
-### 3. `hackmd_create_note`
-
-**Purpose:** Create a new note on HackMD.
-
-**Input:**
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `title` | string | Yes | The title of the new note |
-| `content` | string | Yes | The markdown content |
-| `readPermission` | string | No | `"owner"`, `"signed_in"`, or `"guest"` |
-| `writePermission` | string | No | `"owner"`, `"signed_in"`, or `"guest"` |
-
-**Output:** JSON object with the created note's metadata including `id` and `publishLink`
-
-**Example Usage:**
-```json
-{
-  "name": "hackmd_create_note",
-  "input": {
-    "title": "Meeting Notes - 2024-02-01",
-    "content": "# Meeting Notes\n\n## Attendees\n- Alice\n- Bob\n\n## Action Items\n- [ ] Follow up on project timeline"
-  }
-}
-```
-
-**When to Use:**
-- User explicitly asks to create a new note
-- Saving generated content (plans, summaries, reports)
-- Documenting task results
-
-**Best Practices:**
-- Always use descriptive titles
-- Format content with proper markdown headings
-- Include date in title if relevant
+## 3. 最佳實踐 (Best Practices)
+- **結構化輸出**：建立筆記時應使用標準 Markdown 標題結構。
+- **錯誤處理**：若 API 回傳 401，請檢查 `.env` 中的 `HACKMD_API_TOKEN`。
+- **報告同步**：重大修改後，應將執行結果同步回專案的 `CHANGELOG.md`。
 
 ---
-
-### 4. `hackmd_update_note`
-
-**Purpose:** Update the content of an existing note.
-
-**Input:**
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `noteId` | string | Yes | The unique ID of the note |
-| `content` | string | Yes | The new markdown content |
-| `readPermission` | string | No | `"owner"`, `"signed_in"`, or `"guest"` |
-| `writePermission` | string | No | `"owner"`, `"signed_in"`, or `"guest"` |
-
-**Output:** JSON object with updated note metadata
-
-**Example Usage:**
-```json
-{
-  "name": "hackmd_update_note",
-  "input": {
-    "noteId": "abc123xyz",
-    "content": "# Updated Content\n\nThis note has been updated."
-  }
-}
-```
-
-**When to Use:**
-- User asks to modify an existing note
-- Appending new content to a note
-- Fixing or updating information
-
-**Best Practices:**
-- Read the note first if you need to preserve existing content
-- Warn user before overwriting content
-
----
-
-### 5. `hackmd_delete_note`
-
-**Purpose:** Permanently delete a note.
-
-**Input:**
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `noteId` | string | Yes | The unique ID of the note |
-
-**Output:** JSON object with `{ "success": true, "message": "Note deleted" }`
-
-**Example Usage:**
-```json
-{
-  "name": "hackmd_delete_note",
-  "input": {
-    "noteId": "abc123xyz"
-  }
-}
-```
-
-**When to Use:**
-- User explicitly asks to delete a note
-- Cleaning up temporary notes
-
-**Best Practices:**
-- Always confirm with user before deleting
-- This action cannot be undone
-
----
-
-### 6. `hackmd_search_notes`
-
-**Purpose:** Search notes by title (and optionally content) with relevance ranking.
-
-**Input:**
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `keyword` | string | Yes | The keyword to search for |
-| `searchContent` | boolean | No | If true, also search within note content (slower) |
-| `fuzzy` | boolean | No | If true, enable fuzzy matching for typo tolerance |
-| `limit` | integer | No | Maximum results to return (default: 20, max: 100) |
-
-**Output:** JSON array of matching note objects, sorted by relevance
-
-**Relevance Ranking:**
-1. Exact title match (100)
-2. Title starts with keyword (90)
-3. Keyword anywhere in title (70)
-4. Any word matches (60)
-
-**Example Usage:**
-```json
-{
-  "name": "hackmd_search_notes",
-  "input": {
-    "keyword": "meeting",
-    "searchContent": false,
-    "fuzzy": false,
-    "limit": 10
-  }
-}
-```
-
-**Advanced Example (content search with fuzzy matching):**
-```json
-{
-  "name": "hackmd_search_notes",
-  "input": {
-    "keyword": "project plan",
-    "searchContent": true,
-    "fuzzy": true,
-    "limit": 5
-  }
-}
-```
-
-**When to Use:**
-- User asks to find a note by name
-- Looking for notes related to a topic
-- Before creating a note, check if similar exists
-- Finding notes by content keywords (use `searchContent: true`)
-
----
-
-## Workflow Recommendations
-
-### Creating a Note for Task Results
-
-1. Generate the content
-2. Call `hackmd_create_note` with a descriptive title
-3. Return the `publishLink` to the user
-
-### Updating an Existing Note
-
-1. Use `hackmd_search_notes` or `hackmd_list_notes` to find the note
-2. Use `hackmd_read_note` to get current content (if needed to preserve)
-3. Use `hackmd_update_note` with the new content
-
-### Organizing Notes
-
-1. Use consistent title prefixes (e.g., "Meeting - ", "Project - ")
-2. Include dates in titles for time-sensitive notes
-3. Use markdown headers for structure
-
-## Error Handling
-
-All tools may return error responses in this format:
-```json
-{
-  "error": "Error message here"
-}
-```
-
-Common errors:
-- `"noteId is required"` - Missing required parameter
-- `"Note not found"` - Invalid note ID
-- `"Unauthorized"` - Invalid API token
-
-## Integration Example
-
-```python
-import asyncio
-from hackmd_agent import create_hackmd_tools, process_message
-import anthropic
-
-async def main():
-    client = anthropic.AsyncAnthropic()
-    tools = create_hackmd_tools("your-token")
-
-    # Process user request
-    result = await process_message(
-        client,
-        tools,
-        "Create a note with my project plan"
-    )
-
-    print(result.response)
-    print("Tools used:", result.tools_used)
-
-asyncio.run(main())
-```
-
-## Async Considerations
-
-All tools in this Python version are async. When integrating:
-
-```python
-# Direct tool execution
-result = await execute_tool(tools, "hackmd_list_notes", {})
-
-# Or within an async context
-async with asyncio.TaskGroup() as tg:
-    task1 = tg.create_task(execute_tool(tools, "hackmd_list_notes", {}))
-    task2 = tg.create_task(execute_tool(tools, "hackmd_read_note", {"noteId": "abc"}))
-```
-
-## Version
-
-This document is for **hackmd-agent-python v1.3.0**.
-
-See [CHANGELOG.md](./CHANGELOG.md) for version history.
+*註：本文件專注於 HackMD 工具操作細節，通用環境指令請查閱全域規範。*
